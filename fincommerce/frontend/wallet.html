@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Wallet - FinCommerce</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-wrapper">
+    <div id="sidebar-component"></div>
+
+    <main class="main-content">
+      <div class="header-bar">
+        <div class="page-title">
+          <h2>Digital FinTech Wallet</h2>
+          <p>Manage funds, make instant UPI payments, and link bank accounts</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-outline" onclick="openModal('modal-receive')">
+            <i class="fa-solid fa-qrcode"></i> Receive QR
+          </button>
+          <button class="btn btn-primary" onclick="openModal('modal-add-money')">
+            <i class="fa-solid fa-plus"></i> Add Money
+          </button>
+        </div>
+      </div>
+
+      <!-- Wallet Overview Card -->
+      <div class="glass-card" style="padding: 2rem; margin-bottom: 2rem; background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(16, 185, 129, 0.15)); border: 1px solid var(--border-highlight);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.5rem;">
+          <div>
+            <div style="font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Total FinCommerce Balance</div>
+            <div style="font-size: 2.8rem; font-weight: 800; font-family: var(--font-heading); margin: 0.25rem 0;" id="wallet-balance">₹0.00</div>
+            <div style="font-size: 0.85rem; color: var(--secondary);">Available for withdrawal & online checkout</div>
+          </div>
+
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="openModal('modal-add-money')"><i class="fa-solid fa-plus-circle"></i> Add Funds</button>
+            <button class="btn btn-secondary" onclick="openModal('modal-send-money')"><i class="fa-solid fa-paper-plane"></i> Send Money</button>
+            <button class="btn btn-outline" onclick="openModal('modal-withdraw')"><i class="fa-solid fa-building-columns"></i> Withdraw</button>
+            <button class="btn btn-outline" onclick="openModal('modal-upi')"><i class="fa-solid fa-qrcode"></i> Pay UPI</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bill Payments & Linked Banks Grid -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+        
+        <!-- Bill Payment Module -->
+        <div class="glass-card" id="pay-bills" style="padding: 1.5rem;">
+          <h3>Pay Utility Bills</h3>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Instant bill settlement using wallet balance</p>
+          <form id="bill-form">
+            <div class="form-group">
+              <label class="form-label">Bill Category</label>
+              <select id="bill-category" class="form-control">
+                <option value="ELECTRICITY">Electricity Bill</option>
+                <option value="WATER">Water Bill</option>
+                <option value="MOBILE_RECHARGE">Mobile Recharge / Postpaid</option>
+                <option value="INTERNET">Internet / Broadband</option>
+                <option value="GAS">Piped Gas / LPG</option>
+                <option value="DTH">DTH Recharge</option>
+                <option value="INSURANCE">Insurance Premium</option>
+                <option value="CREDIT_CARD">Credit Card Bill</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Biller / Provider Name</label>
+              <input type="text" id="bill-provider" class="form-control" placeholder="e.g. BESCOM / Airtel / Tata Play" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Consumer / Account / Mobile No.</label>
+              <input type="text" id="bill-customer-no" class="form-control" placeholder="Account identifier" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Amount (₹)</label>
+              <input type="number" id="bill-amount" class="form-control" min="1" step="0.01" placeholder="500.00" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Security PIN</label>
+              <input type="password" id="bill-pin" class="form-control" placeholder="1234" required maxlength="6">
+            </div>
+            <button type="submit" class="btn btn-secondary" style="width: 100%;"><i class="fa-solid fa-bolt"></i> Pay Bill Now</button>
+          </form>
+        </div>
+
+        <!-- Linked Bank Accounts Module -->
+        <div class="glass-card" style="padding: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3>Linked Bank Accounts</h3>
+            <button class="btn btn-outline btn-sm" onclick="openModal('modal-add-bank')"><i class="fa-solid fa-plus"></i> Link Bank</button>
+          </div>
+          <div id="bank-accounts-list">
+            <p style="color: var(--text-muted);">Loading bank accounts...</p>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- MODALS -->
+
+  <!-- Add Money Modal -->
+  <div class="modal-overlay" id="modal-add-money">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3>Add Money to Wallet</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="add-money-form">
+        <div class="form-group">
+          <label class="form-label">Amount (₹)</label>
+          <input type="number" id="add-amount" class="form-control" min="1" step="0.01" placeholder="1000.00" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Payment Method</label>
+          <select id="add-method" class="form-control">
+            <option value="UPI">UPI / GPay / PhonePe</option>
+            <option value="DEBIT_CARD">Debit Card (Mock Gateway)</option>
+            <option value="CREDIT_CARD">Credit Card (Mock Gateway)</option>
+            <option value="NET_BANKING">Net Banking</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;"><i class="fa-solid fa-shield-halved"></i> Confirm Payment</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Send Money Modal -->
+  <div class="modal-overlay" id="modal-send-money">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3>Send Money</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="send-money-form">
+        <div class="form-group">
+          <label class="form-label">Receiver (Email, Mobile, or UPI ID)</label>
+          <input type="text" id="send-receiver" class="form-control" placeholder="john@example.com / 9876543210" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amount (₹)</label>
+          <input type="number" id="send-amount" class="form-control" min="1" step="0.01" placeholder="500.00" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Note / Reference (Optional)</label>
+          <input type="text" id="send-note" class="form-control" placeholder="Dinner Split / Gift">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Security PIN</label>
+          <input type="password" id="send-pin" class="form-control" placeholder="1234" required maxlength="6">
+        </div>
+        <button type="submit" class="btn btn-secondary" style="width: 100%;"><i class="fa-solid fa-paper-plane"></i> Send Money Now</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Withdraw Modal -->
+  <div class="modal-overlay" id="modal-withdraw">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3>Withdraw to Bank</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="withdraw-form">
+        <div class="form-group">
+          <label class="form-label">Select Destination Bank</label>
+          <select id="withdraw-bank-select" class="form-control" required></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Withdrawal Amount (₹)</label>
+          <input type="number" id="withdraw-amount" class="form-control" min="1" step="0.01" placeholder="1000.00" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Transaction PIN</label>
+          <input type="password" id="withdraw-pin" class="form-control" placeholder="1234" required maxlength="6">
+        </div>
+        <button type="submit" class="btn btn-outline" style="width: 100%;"><i class="fa-solid fa-building-columns"></i> Confirm Bank Transfer</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Pay UPI Modal -->
+  <div class="modal-overlay" id="modal-upi">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3>UPI / Scan & Pay</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="upi-pay-form">
+        <div class="form-group">
+          <label class="form-label">Enter VPA / UPI ID</label>
+          <input type="text" id="upi-id-input" class="form-control" placeholder="merchant@upi / 9876543210@paytm" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amount (₹)</label>
+          <input type="number" id="upi-amount-input" class="form-control" min="1" step="0.01" placeholder="250.00" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Transaction PIN</label>
+          <input type="password" id="upi-pin-input" class="form-control" placeholder="1234" required maxlength="6">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;"><i class="fa-solid fa-qrcode"></i> Execute UPI Payment</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Receive QR Modal -->
+  <div class="modal-overlay" id="modal-receive">
+    <div class="modal-container" style="text-align: center;">
+      <div class="modal-header">
+        <h3>Receive Payment via QR</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div style="padding: 1rem;">
+        <img id="receive-qr-img" src="" style="width: 200px; height: 200px; border-radius: var(--radius-md); border: 2px solid var(--primary);" alt="QR Code">
+        <div style="font-weight: 700; margin-top: 1rem;" id="receive-upi-id">upi@fincommerce</div>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.5rem;">Scan using any UPI app to transfer funds directly into your wallet.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Bank Modal -->
+  <div class="modal-overlay" id="modal-add-bank">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3>Link Bank Account</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="add-bank-form">
+        <div class="form-group">
+          <label class="form-label">Bank Name</label>
+          <input type="text" id="bank-name" class="form-control" placeholder="e.g. HDFC Bank / ICICI Bank" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Account Holder Name</label>
+          <input type="text" id="bank-holder" class="form-control" placeholder="John Doe" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Account Number</label>
+          <input type="text" id="bank-acc-no" class="form-control" placeholder="50100987654321" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">IFSC Code</label>
+          <input type="text" id="bank-ifsc" class="form-control" placeholder="HDFC0001234" required>
+        </div>
+        <button type="submit" class="btn btn-secondary" style="width: 100%;"><i class="fa-solid fa-plus"></i> Save & Link Bank</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    Auth.requireAuth();
+    renderSidebar('wallet');
+
+    let userBankAccounts = [];
+
+    async function loadWallet() {
+      try {
+        const res = await ApiClient.get('/api/wallet');
+        if (res.success) {
+          document.getElementById('wallet-balance').textContent = formatCurrency(res.data.balance);
+        }
+
+        // Load Bank Accounts
+        const banksRes = await ApiClient.get('/api/banks');
+        const bankListContainer = document.getElementById('bank-accounts-list');
+        const bankSelect = document.getElementById('withdraw-bank-select');
+
+        if (banksRes.success && banksRes.data && banksRes.data.length > 0) {
+          userBankAccounts = banksRes.data;
+          bankListContainer.innerHTML = userBankAccounts.map(b => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-bottom: 1px solid var(--border-color);">
+              <div>
+                <div style="font-weight: 700; font-size: 0.95rem;">${b.bankName} ${b.isPrimary ? '<span class="badge badge-success">Primary</span>' : ''}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">${b.maskedAccountNumber} | IFSC: ${b.ifscCode}</div>
+              </div>
+              <button onclick="deleteBank(${b.id})" class="btn btn-outline btn-sm" style="color: var(--danger); border-color: var(--danger);"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          `).join('');
+
+          bankSelect.innerHTML = userBankAccounts.map(b => `<option value="${b.id}">${b.bankName} (${b.maskedAccountNumber})</option>`).join('');
+        } else {
+          bankListContainer.innerHTML = `<p style="color: var(--text-muted);">No bank accounts linked yet.</p>`;
+          bankSelect.innerHTML = `<option value="">No bank accounts available</option>`;
+        }
+
+        // Load QR Code
+        const qrRes = await ApiClient.get('/api/wallet/qr');
+        if (qrRes.success) {
+          document.getElementById('receive-qr-img').src = qrRes.data.qrCodeDataUrl;
+          document.getElementById('receive-upi-id').textContent = `UPI ID: ${qrRes.data.upiId}`;
+        }
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // Add Money
+    document.getElementById('add-money-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const amount = parseFloat(document.getElementById('add-amount').value);
+      const paymentMethod = document.getElementById('add-method').value;
+
+      try {
+        await ApiClient.post('/api/wallet/add-money', { amount, paymentMethod });
+        showToast(`Successfully added ₹${amount} to wallet!`, 'success');
+        closeModal('modal-add-money');
+        loadWallet();
+      } catch (err) { showToast(err.message, 'error'); }
+    });
+
+    // Send Money
+    document.getElementById('send-money-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const receiverIdentifier = document.getElementById('send-receiver').value;
+      const amount = parseFloat(document.getElementById('send-amount').value);
+      const note = document.getElementById('send-note').value;
+      const pin = document.getElementById('send-pin').value;
+
+      try {
+        await ApiClient.post('/api/wallet/send', { receiverIdentifier, amount, note, pin });
+        showToast(`Sent ₹${amount} successfully!`, 'success');
+        closeModal('modal-send-money');
+        loadWallet();
+      } catch (err) { showToast(err.message, 'error'); }
+    });
+
+    // Withdraw
+    document.getElementById('withdraw-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const bankAccountId = document.getElementById('withdraw-bank-select').value;
+      const amount = parseFloat(document.getElementById('withdraw-amount').value);
+      const pin = document.getElementById('withdraw-pin').value;
+
+      try {
+        await ApiClient.post('/api/wallet/withdraw', { bankAccountId, amount, pin });
+        showToast(`Withdrawal of ₹${amount} processed!`, 'success');
+        closeModal('modal-withdraw');
+        loadWallet();
+      } catch (err) { showToast(err.message, 'error'); }
+    });
+
+    // Pay UPI
+    document.getElementById('upi-pay-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const upiId = document.getElementById('upi-id-input').value;
+      const amount = parseFloat(document.getElementById('upi-amount-input').value);
+      const pin = document.getElementById('upi-pin-input').value;
+
+      try {
+        await ApiClient.post('/api/wallet/pay-upi', { upiId, amount, pin });
+        showToast(`UPI payment of ₹${amount} complete!`, 'success');
+        closeModal('modal-upi');
+        loadWallet();
+      } catch (err) { showToast(err.message, 'error'); }
+    });
+
+    // Add Bank
+    document.getElementById('add-bank-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const bankName = document.getElementById('bank-name').value;
+      const accountHolderName = document.getElementById('bank-holder').value;
+      const accountNumber = document.getElementById('bank-acc-no').value;
+      const ifscCode = document.getElementById('bank-ifsc').value;
+
+      try {
+        await ApiClient.post('/api/banks', { bankName, accountHolderName, accountNumber, ifscCode, isPrimary: true });
+        showToast('Bank account linked!', 'success');
+        closeModal('modal-add-bank');
+        loadWallet();
+      } catch (err) { showToast(err.message, 'error'); }
+    });
+
+    // Delete Bank
+    async function deleteBank(id) {
+      if (confirm('Are you sure you want to remove this bank account?')) {
+        try {
+          await ApiClient.delete(`/api/banks/${id}`);
+          showToast('Bank account removed', 'info');
+          loadWallet();
+        } catch (err) { showToast(err.message, 'error'); }
+      }
+    }
+
+    // Bill Pay
+    document.getElementById('bill-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const category = document.getElementById('bill-category').value;
+      const providerName = document.getElementById('bill-provider').value;
+      const customerNumber = document.getElementById('bill-customer-no').value;
+      const amount = parseFloat(document.getElementById('bill-amount').value);
+      const pin = document.getElementById('bill-pin').value;
+
+      try {
+        await ApiClient.post('/api/bills/pay', { category, providerName, customerNumber, amount, pin });
+        showToast(`Bill paid successfully for ₹${amount}!`, 'success');
+        document.getElementById('bill-form').reset();
+        loadWallet();
+      } catch (err) { showToast(err.message, 'error'); }
+    });
+
+    loadWallet();
+  </script>
+</body>
+</html>

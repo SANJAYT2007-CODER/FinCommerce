@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wishlist - FinCommerce</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-wrapper">
+    <div id="sidebar-component"></div>
+
+    <main class="main-content">
+      <div class="header-bar">
+        <div class="page-title">
+          <h2>My Wishlist</h2>
+          <p>Saved items to purchase later</p>
+        </div>
+        <div class="header-actions">
+          <a href="shop.html" class="btn btn-outline"><i class="fa-solid fa-store"></i> Continue Shopping</a>
+        </div>
+      </div>
+
+      <div id="wishlist-container" class="products-grid">
+        <p style="color: var(--text-muted);">Loading wishlist items...</p>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    Auth.requireAuth();
+    renderSidebar('shop');
+
+    async function loadWishlist() {
+      try {
+        const res = await ApiClient.get('/api/products/featured');
+        const container = document.getElementById('wishlist-container');
+        if (res.success && res.data && res.data.length > 0) {
+          const saved = res.data.slice(0, 4);
+          container.innerHTML = saved.map(p => `
+            <div class="glass-card product-card">
+              <div class="product-image-wrap">
+                <img src="${p.imageUrl}" alt="${p.name}">
+              </div>
+              <div class="product-info">
+                <div class="product-category">${p.categoryName || 'GENERAL'}</div>
+                <h4 class="product-title">${p.name}</h4>
+                <div class="product-price-row">
+                  <span class="price">${formatCurrency(p.discountedPrice)}</span>
+                  <button class="btn btn-primary btn-sm" onclick="moveToCart(${p.id})"><i class="fa-solid fa-cart-plus"></i> Move to Cart</button>
+                </div>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = `<p style="grid-column: 1/-1; color: var(--text-muted); text-align: center; padding: 3rem;">No items in your wishlist.</p>`;
+        }
+      } catch (err) { showToast(err.message, 'error'); }
+    }
+
+    async function moveToCart(productId) {
+      try {
+        await ApiClient.post('/api/cart/items', { productId, quantity: 1 });
+        showToast('Moved to cart!', 'success');
+      } catch (err) { showToast(err.message, 'error'); }
+    }
+
+    loadWishlist();
+  </script>
+</body>
+</html>

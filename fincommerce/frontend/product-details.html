@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details - FinCommerce</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-wrapper">
+    <div id="sidebar-component"></div>
+
+    <main class="main-content">
+      <div style="margin-bottom: 1.5rem;">
+        <a href="shop.html" class="btn btn-outline btn-sm"><i class="fa-solid fa-arrow-left"></i> Back to Shop</a>
+      </div>
+
+      <div class="glass-card" style="padding: 2rem; margin-bottom: 2rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem;">
+          
+          <!-- Product Image View -->
+          <div>
+            <img id="pd-image" src="" style="width: 100%; height: 380px; object-fit: cover; border-radius: var(--radius-md); border: 1px solid var(--border-color);" alt="Product">
+          </div>
+
+          <!-- Product Main Info -->
+          <div style="display: flex; flex-direction: column;">
+            <span class="badge badge-info" id="pd-category" style="align-self: flex-start; margin-bottom: 0.5rem;">CATEGORY</span>
+            <h1 id="pd-title" style="font-size: 2.2rem; margin-bottom: 0.5rem;">Product Name</h1>
+            <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">Brand: <strong id="pd-brand" style="color: var(--text-main);">Brand Name</strong></div>
+
+            <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--accent); margin-bottom: 1.5rem;">
+              <i class="fa-solid fa-star"></i> <span id="pd-rating" style="font-weight: 700; font-size: 1.1rem;">4.8</span>
+              <span style="color: var(--text-muted); font-size: 0.85rem;">(<span id="pd-reviews-count">128</span> verified ratings)</span>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+              <span id="pd-discounted-price" style="font-size: 2.4rem; font-weight: 800; color: var(--secondary); font-family: var(--font-heading);">₹0.00</span>
+              <span id="pd-original-price" style="text-decoration: line-through; color: var(--text-muted); font-size: 1.2rem; margin-left: 0.75rem;">₹0.00</span>
+              <span id="pd-discount-badge" class="badge badge-danger" style="margin-left: 0.5rem;">0% OFF</span>
+            </div>
+
+            <p id="pd-description" style="color: var(--text-muted); line-height: 1.7; margin-bottom: 2rem;">Product description loading...</p>
+
+            <div style="display: flex; gap: 1rem; margin-top: auto;">
+              <button class="btn btn-primary btn-lg" id="add-to-cart-btn"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
+              <button class="btn btn-secondary btn-lg" id="buy-now-btn"><i class="fa-solid fa-bolt"></i> Buy Now</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    Auth.requireAuth();
+    renderSidebar('shop');
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+
+    async function loadProductDetails() {
+      if (!productId) {
+        window.location.href = 'shop.html';
+        return;
+      }
+
+      try {
+        const res = await ApiClient.get(`/api/products/${productId}`);
+        if (res.success && res.data) {
+          const p = res.data;
+          document.getElementById('pd-title').textContent = p.name;
+          document.getElementById('pd-brand').textContent = p.brand;
+          document.getElementById('pd-category').textContent = p.categoryName || 'GENERAL';
+          document.getElementById('pd-image').src = p.imageUrl;
+          document.getElementById('pd-rating').textContent = p.rating;
+          document.getElementById('pd-reviews-count').textContent = p.reviewsCount;
+          document.getElementById('pd-description').textContent = p.description;
+
+          document.getElementById('pd-discounted-price').textContent = formatCurrency(p.discountedPrice);
+          if (p.discountPercent > 0) {
+            document.getElementById('pd-original-price').textContent = formatCurrency(p.price);
+            document.getElementById('pd-discount-badge').textContent = `${p.discountPercent}% OFF`;
+          } else {
+            document.getElementById('pd-original-price').style.display = 'none';
+            document.getElementById('pd-discount-badge').style.display = 'none';
+          }
+
+          document.getElementById('add-to-cart-btn').onclick = async () => {
+            await ApiClient.post('/api/cart/items', { productId: p.id, quantity: 1 });
+            showToast('Added to cart!', 'success');
+          };
+
+          document.getElementById('buy-now-btn').onclick = async () => {
+            await ApiClient.post('/api/cart/items', { productId: p.id, quantity: 1 });
+            window.location.href = 'cart.html';
+          };
+        }
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    loadProductDetails();
+  </script>
+</body>
+</html>

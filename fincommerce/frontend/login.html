@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In - FinCommerce</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), transparent);">
+
+  <div class="glass-card" style="width: 100%; max-width: 460px; padding: 2.5rem;">
+    <div style="text-align: center; margin-bottom: 1.5rem;">
+      <i class="fa-solid fa-wallet" style="font-size: 2.8rem; color: var(--primary); margin-bottom: 0.5rem;"></i>
+      <h2>Welcome to FinCommerce</h2>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">Sign in with Mobile OTP or Password</p>
+    </div>
+
+    <!-- Login Mode Tabs -->
+    <div style="display: flex; background: var(--bg-input); padding: 0.25rem; border-radius: var(--radius-sm); margin-bottom: 1.5rem;">
+      <button type="button" id="tab-otp" class="btn btn-sm" style="flex: 1; background: var(--primary); color: #fff;" onclick="switchLoginMode('otp')">
+        <i class="fa-solid fa-mobile-screen"></i> Mobile OTP
+      </button>
+      <button type="button" id="tab-pwd" class="btn btn-sm" style="flex: 1; background: transparent; color: var(--text-muted);" onclick="switchLoginMode('pwd')">
+        <i class="fa-solid fa-key"></i> Password
+      </button>
+    </div>
+
+    <!-- STEP 1: Enter Mobile / Identifier -->
+    <div id="otp-step-1">
+      <form id="send-otp-form">
+        <div class="form-group">
+          <label class="form-label" for="login-mobile">Mobile Number or Email</label>
+          <div style="position: relative;">
+            <input type="text" id="login-mobile" class="form-control" placeholder="e.g. 9876543210 or john@example.com" value="john@example.com" required>
+          </div>
+          <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.3rem; display: block;">Registered account: demo user <strong>9876543210</strong> / <strong>john@example.com</strong></small>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; padding: 0.85rem;">
+          <i class="fa-solid fa-paper-plane"></i> Send OTP
+        </button>
+      </form>
+    </div>
+
+    <!-- STEP 2: Verify 6-Digit OTP -->
+    <div id="otp-step-2" style="display: none;">
+      <div style="text-align: center; margin-bottom: 1rem;">
+        <span class="badge badge-info" style="font-size: 0.8rem;"><i class="fa-solid fa-shield-halved"></i> Verification Sent</span>
+        <p id="otp-sent-msg" style="font-size: 0.9rem; margin-top: 0.5rem; color: var(--text-main);">OTP sent to +91 XXXXX XXXXX</p>
+        <p style="font-size: 0.8rem; color: var(--accent); margin-top: 0.2rem;"><i class="fa-solid fa-circle-info"></i> Demo OTP: <strong>123456</strong></p>
+      </div>
+
+      <form id="verify-otp-form">
+        <div class="otp-container">
+          <input type="text" maxlength="1" class="otp-box" id="otp-1" autofocus>
+          <input type="text" maxlength="1" class="otp-box" id="otp-2">
+          <input type="text" maxlength="1" class="otp-box" id="otp-3">
+          <input type="text" maxlength="1" class="otp-box" id="otp-4">
+          <input type="text" maxlength="1" class="otp-box" id="otp-5">
+          <input type="text" maxlength="1" class="otp-box" id="otp-6">
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; font-size: 0.85rem;">
+          <span style="color: var(--text-muted);">OTP expires in: <strong id="timer-display" style="color: var(--primary);">00:45</strong></span>
+          <button type="button" id="btn-resend" class="btn btn-outline btn-sm" disabled onclick="resendOtp()">Resend OTP</button>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem;">
+          <i class="fa-solid fa-circle-check"></i> Verify & Login
+        </button>
+
+        <button type="button" class="btn btn-outline" style="width: 100%; margin-top: 0.5rem; border: none; font-size: 0.85rem;" onclick="resetOtpStep()">
+          <i class="fa-solid fa-arrow-left"></i> Change Mobile Number
+        </button>
+      </form>
+    </div>
+
+    <!-- Password Login Form -->
+    <div id="pwd-form-container" style="display: none;">
+      <form id="login-pwd-form">
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email Address</label>
+          <input type="email" id="login-email" class="form-control" placeholder="john@example.com" required value="john@example.com">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="login-password">Password</label>
+          <input type="password" id="login-password" class="form-control" placeholder="••••••••" required value="password123">
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; padding: 0.85rem;">
+          <i class="fa-solid fa-right-to-bracket"></i> Sign In with Password
+        </button>
+      </form>
+    </div>
+
+    <div style="margin-top: 1.5rem; text-align: center; padding-top: 1rem; border-top: 1px solid var(--border-color); font-size: 0.875rem;">
+      <p style="color: var(--text-muted);">Demo Admin Credentials: <br><strong style="color: var(--accent);">admin@fincommerce.com / admin123</strong></p>
+      <p style="margin-top: 1rem;">Don't have an account? <a href="register.html">Register here</a></p>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    let currentIdentifier = '';
+    let countdownInterval = null;
+    let secondsRemaining = 45;
+
+    function switchLoginMode(mode) {
+      const tabOtp = document.getElementById('tab-otp');
+      const tabPwd = document.getElementById('tab-pwd');
+      const otpStep1 = document.getElementById('otp-step-1');
+      const otpStep2 = document.getElementById('otp-step-2');
+      const pwdContainer = document.getElementById('pwd-form-container');
+
+      if (mode === 'otp') {
+        tabOtp.style.background = 'var(--primary)';
+        tabOtp.style.color = '#fff';
+        tabPwd.style.background = 'transparent';
+        tabPwd.style.color = 'var(--text-muted)';
+        otpStep1.style.display = 'block';
+        otpStep2.style.display = 'none';
+        pwdContainer.style.display = 'none';
+      } else {
+        tabPwd.style.background = 'var(--primary)';
+        tabPwd.style.color = '#fff';
+        tabOtp.style.background = 'transparent';
+        tabOtp.style.color = 'var(--text-muted)';
+        otpStep1.style.display = 'none';
+        otpStep2.style.display = 'none';
+        pwdContainer.style.display = 'block';
+      }
+    }
+
+    // Auto focus transitions for OTP boxes
+    const otpBoxes = document.querySelectorAll('.otp-box');
+    otpBoxes.forEach((box, idx) => {
+      box.addEventListener('input', (e) => {
+        if (e.target.value && idx < otpBoxes.length - 1) {
+          otpBoxes[idx + 1].focus();
+        }
+      });
+      box.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !e.target.value && idx > 0) {
+          otpBoxes[idx - 1].focus();
+        }
+      });
+    });
+
+    function startTimer() {
+      clearInterval(countdownInterval);
+      secondsRemaining = 45;
+      const timerDisplay = document.getElementById('timer-display');
+      const resendBtn = document.getElementById('btn-resend');
+      resendBtn.disabled = true;
+
+      countdownInterval = setInterval(() => {
+        secondsRemaining--;
+        const mins = String(Math.floor(secondsRemaining / 60)).padStart(2, '0');
+        const secs = String(secondsRemaining % 60).padStart(2, '0');
+        timerDisplay.textContent = `${mins}:${secs}`;
+
+        if (secondsRemaining <= 0) {
+          clearInterval(countdownInterval);
+          timerDisplay.textContent = "Expired";
+          resendBtn.disabled = false;
+        }
+      }, 1000);
+    }
+
+    async function resendOtp() {
+      try {
+        const res = await Auth.sendOtp(currentIdentifier);
+        showToast('New OTP sent successfully!', 'info');
+        startTimer();
+      } catch (err) {
+        showToast(err.message || 'Failed to resend OTP', 'error');
+      }
+    }
+
+    function resetOtpStep() {
+      clearInterval(countdownInterval);
+      document.getElementById('otp-step-1').style.display = 'block';
+      document.getElementById('otp-step-2').style.display = 'none';
+    }
+
+    // Step 1: Send OTP
+    document.getElementById('send-otp-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      currentIdentifier = document.getElementById('login-mobile').value.trim();
+      try {
+        const res = await Auth.sendOtp(currentIdentifier);
+        document.getElementById('otp-sent-msg').textContent = res.message || `OTP sent to ${currentIdentifier}`;
+        document.getElementById('otp-step-1').style.display = 'none';
+        document.getElementById('otp-step-2').style.display = 'block';
+        otpBoxes[0].focus();
+        startTimer();
+        showToast('OTP sent to ' + currentIdentifier, 'success');
+      } catch (err) {
+        showToast(err.message || 'Error sending OTP', 'error');
+      }
+    });
+
+    // Step 2: Verify OTP
+    document.getElementById('verify-otp-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      let otpCode = '';
+      otpBoxes.forEach(b => otpCode += b.value);
+      if (otpCode.length < 6) {
+        showToast('Please enter complete 6-digit OTP', 'error');
+        return;
+      }
+
+      try {
+        const user = await Auth.verifyOtp(currentIdentifier, otpCode);
+        showToast('Mobile number verified successfully! Redirecting...', 'success');
+        setTimeout(() => {
+          if (user.role === 'ROLE_ADMIN') {
+            window.location.href = 'admin.html';
+          } else {
+            window.location.href = 'dashboard.html';
+          }
+        }, 1000);
+      } catch (err) {
+        showToast(err.message || 'Invalid OTP. Please try again.', 'error');
+      }
+    });
+
+    // Password Login Fallback
+    document.getElementById('login-pwd-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+
+      try {
+        const user = await Auth.login(email, password);
+        showToast('Login successful! Redirecting...', 'success');
+        setTimeout(() => {
+          if (user.role === 'ROLE_ADMIN') {
+            window.location.href = 'admin.html';
+          } else {
+            window.location.href = 'dashboard.html';
+          }
+        }, 1000);
+      } catch (err) {
+        showToast(err.message || 'Invalid credentials', 'error');
+      }
+    });
+  </script>
+
+</body>
+</html>

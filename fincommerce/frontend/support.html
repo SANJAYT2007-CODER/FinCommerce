@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Support - FinCommerce</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-wrapper">
+    <div id="sidebar-component"></div>
+
+    <main class="main-content">
+      <div class="header-bar">
+        <div class="page-title">
+          <h2>Customer Support & Help Center</h2>
+          <p>Instant FAQ assistance, ticket management, and chatbot support</p>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 2rem;">
+        
+        <!-- Interactive AI Chatbot Assistant -->
+        <div class="glass-card" style="padding: 1.5rem; display: flex; flex-direction: column; height: 580px;">
+          <h3><i class="fa-solid fa-robot" style="color: var(--primary);"></i> FinCommerce Assistant</h3>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Ask anything about Wallet balance, UPI, Returns, or Orders</p>
+          
+          <div id="chat-messages" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; padding-right: 0.5rem; margin-bottom: 1rem;">
+            <div style="align-self: flex-start; background: var(--bg-input); padding: 0.75rem 1rem; border-radius: var(--radius-md); max-width: 80%; font-size: 0.9rem;">
+              👋 Hi there! I'm your FinCommerce Support Bot. How can I help you today?
+            </div>
+          </div>
+
+          <form id="chat-form" style="display: flex; gap: 0.5rem;">
+            <input type="text" id="chat-input" class="form-control" placeholder="Ask about refund, add money, coupons..." required>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i></button>
+          </form>
+        </div>
+
+        <!-- Ticket Management & FAQ -->
+        <div>
+          <!-- Create Ticket Card -->
+          <div class="glass-card" style="padding: 1.5rem; margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h3>Support Tickets</h3>
+              <button class="btn btn-outline btn-sm" onclick="openModal('modal-create-ticket')"><i class="fa-solid fa-plus"></i> New Ticket</button>
+            </div>
+            <div id="tickets-list">
+              <p style="color: var(--text-muted);">Loading support tickets...</p>
+            </div>
+          </div>
+
+          <!-- FAQ Accordion Card -->
+          <div class="glass-card" style="padding: 1.5rem;">
+            <h3>Frequently Asked Questions</h3>
+            <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem;">
+              <details style="padding: 0.75rem; background: var(--bg-input); border-radius: var(--radius-sm); cursor: pointer;">
+                <summary style="font-weight: 700;">How do refunds work in FinCommerce?</summary>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.5rem;">Once a return request is approved, the full refund amount is instantly credited to your digital wallet balance.</p>
+              </details>
+
+              <details style="padding: 0.75rem; background: var(--bg-input); border-radius: var(--radius-sm); cursor: pointer;">
+                <summary style="font-weight: 700;">Is my card or bank information stored?</summary>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.5rem;">No! All raw card numbers, CVVs, and sensitive credentials are masked or handled via secure mock gateways.</p>
+              </details>
+
+              <details style="padding: 0.75rem; background: var(--bg-input); border-radius: var(--radius-sm); cursor: pointer;">
+                <summary style="font-weight: 700;">What are the active coupon codes?</summary>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.5rem;">Try using <strong>WELCOME10</strong> (10% OFF) or <strong>SAVE500</strong> (₹500 OFF on orders above ₹5,000).</p>
+              </details>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Create Ticket Modal -->
+  <div class="modal-overlay" id="modal-create-ticket">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3>Create Support Ticket</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="ticket-form">
+        <div class="form-group">
+          <label class="form-label">Subject</label>
+          <input type="text" id="tck-subject" class="form-control" placeholder="Brief issue description" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select id="tck-category" class="form-control">
+            <option value="WALLET">Wallet Balance</option>
+            <option value="PAYMENTS">Payments / UPI</option>
+            <option value="ORDER">Order Delivery</option>
+            <option value="RETURN">Return / Refund</option>
+            <option value="GENERAL">General Query</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Detailed Message</label>
+          <textarea id="tck-message" class="form-control" rows="4" placeholder="Describe your issue..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;"><i class="fa-solid fa-headset"></i> Submit Ticket</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    Auth.requireAuth();
+    renderSidebar('support');
+
+    async function loadTickets() {
+      try {
+        const res = await ApiClient.get('/api/support/tickets');
+        const container = document.getElementById('tickets-list');
+
+        if (res.success && res.data && res.data.length > 0) {
+          container.innerHTML = res.data.map(t => `
+            <div style="padding: 0.85rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-weight: 700; font-size: 0.9rem;">${t.subject} (${t.ticketNumber})</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">${t.category} | ${new Date(t.createdAt).toLocaleDateString()}</div>
+              </div>
+              <span class="badge ${t.status === 'RESOLVED' ? 'badge-success' : 'badge-warning'}">${t.status}</span>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = `<p style="color: var(--text-muted);">No support tickets submitted yet.</p>`;
+        }
+      } catch (err) { showToast(err.message, 'error'); }
+    }
+
+    // Chatbot submit
+    document.getElementById('chat-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('chat-input');
+      const query = input.value.trim();
+      if (!query) return;
+
+      const chatContainer = document.getElementById('chat-messages');
+      
+      // User message
+      chatContainer.innerHTML += `
+        <div style="align-self: flex-end; background: var(--primary); color: #fff; padding: 0.75rem 1rem; border-radius: var(--radius-md); max-width: 80%; font-size: 0.9rem;">
+          ${query}
+        </div>
+      `;
+      input.value = '';
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      try {
+        const res = await ApiClient.post('/api/support/chat', { query });
+        if (res.success && res.data) {
+          setTimeout(() => {
+            chatContainer.innerHTML += `
+              <div style="align-self: flex-start; background: var(--bg-input); padding: 0.75rem 1rem; border-radius: var(--radius-md); max-width: 80%; font-size: 0.9rem;">
+                ${res.data.reply}
+              </div>
+            `;
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+          }, 400);
+        }
+      } catch (err) { showToast(err.message, 'error'); }
+    });
+
+    // Create ticket
+    document.getElementById('ticket-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const subject = document.getElementById('tck-subject').value;
+      const category = document.getElementById('tck-category').value;
+      const message = document.getElementById('tck-message').value;
+
+      try {
+        await ApiClient.post('/api/support/tickets', { subject, category, message });
+        showToast('Ticket submitted successfully!', 'success');
+        closeModal('modal-create-ticket');
+        loadTickets();
+      } catch (err) { showToast(err.message, 'error'); }
+    });
+
+    loadTickets();
+  </script>
+</body>
+</html>

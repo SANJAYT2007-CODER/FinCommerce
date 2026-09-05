@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Center & Preferences - FinCommerce</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .pref-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 46px;
+      height: 24px;
+    }
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #374151;
+      transition: .3s;
+      border-radius: 34px;
+    }
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+    .toggle-switch input:checked + .toggle-slider {
+      background-color: var(--primary);
+    }
+    .toggle-switch input:checked + .toggle-slider:before {
+      transform: translateX(22px);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div id="sidebar-component"></div>
+
+    <main class="main-content">
+      <div class="header-bar">
+        <div class="page-title">
+          <h2>Security Center & Preferences</h2>
+          <p>Manage notification times, alert preferences, security logs, and credentials</p>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 2rem;">
+        
+        <!-- Column 1: Notification Preferences & Alert Time -->
+        <div class="glass-card" style="padding: 2rem;">
+          <h3><i class="fa-solid fa-bell" style="color: var(--primary); margin-right: 0.5rem;"></i> Notification Preferences</h3>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Choose which alerts you want to receive</p>
+
+          <div class="pref-item">
+            <div>
+              <div style="font-weight: 600;">Payment Notifications</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Instant payment receipts & updates</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="pref-payment" checked onchange="saveNotificationPref()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="pref-item">
+            <div>
+              <div style="font-weight: 600;">Transaction Notifications</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Wallet debits & credits</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="pref-tx" checked onchange="saveNotificationPref()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="pref-item">
+            <div>
+              <div style="font-weight: 600;">Savings Notifications</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Goal milestones & deposit reminders</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="pref-savings" checked onchange="saveNotificationPref()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="pref-item">
+            <div>
+              <div style="font-weight: 600;">Budget Alerts</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Alert when threshold is reached</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="pref-budget" checked onchange="saveNotificationPref()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="pref-item">
+            <div>
+              <div style="font-weight: 600;">Order Notifications</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Tracking & delivery updates</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="pref-order" checked onchange="saveNotificationPref()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="pref-item">
+            <div>
+              <div style="font-weight: 600;">Fraud & Security Alerts</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Unrecognized logins & high transactions</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="pref-fraud" checked onchange="saveNotificationPref()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="pref-item">
+            <div>
+              <div style="font-weight: 600;">Offers & Coupons</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Exclusive shopping deals & discounts</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="pref-offers" checked onchange="saveNotificationPref()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <!-- Alert Schedule Settings -->
+          <h3 style="margin-top: 2rem; margin-bottom: 1rem;"><i class="fa-solid fa-clock" style="color: var(--accent); margin-right: 0.5rem;"></i> Scheduled Alert Times</h3>
+          
+          <div class="form-group">
+            <label class="form-label" for="daily-summary-time">Daily Financial Summary Alert Time</label>
+            <div style="display: flex; gap: 0.75rem;">
+              <input type="time" id="daily-summary-time" class="form-control" value="20:00">
+              <label class="toggle-switch" style="margin-top: 0.5rem;">
+                <input type="checkbox" id="summary-toggle" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="savings-reminder-time">Daily Savings Reminder Time</label>
+            <div style="display: flex; gap: 0.75rem;">
+              <input type="time" id="savings-reminder-time" class="form-control" value="19:00">
+              <label class="toggle-switch" style="margin-top: 0.5rem;">
+                <input type="checkbox" id="reminder-toggle" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="budget-alert-pct">Budget Alert Threshold (%)</label>
+            <select id="budget-alert-pct" class="form-control">
+              <option value="50">50% of monthly budget</option>
+              <option value="75">75% of monthly budget</option>
+              <option value="80" selected>80% of monthly budget</option>
+              <option value="90">90% of monthly budget</option>
+            </select>
+          </div>
+
+          <button onclick="saveScheduleSettings()" class="btn btn-outline" style="width: 100%; margin-top: 0.5rem;">
+            <i class="fa-solid fa-floppy-disk"></i> Save Schedule Preferences
+          </button>
+        </div>
+
+        <!-- Column 2: Flagged Security Alerts & Password -->
+        <div style="display: flex; flex-direction: column; gap: 2rem;">
+          
+          <!-- Flagged Security Alerts -->
+          <div class="glass-card" style="padding: 2rem;">
+            <h3><i class="fa-solid fa-shield-cat" style="color: var(--danger); margin-right: 0.5rem;"></i> Flagged Security Alerts</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Rule-based automated fraud detection and login alerts</p>
+            <div id="security-alerts-list">
+              <p style="color: var(--text-muted);">Loading security alerts...</p>
+            </div>
+          </div>
+
+          <!-- Password & Biometrics -->
+          <div class="glass-card" style="padding: 2rem;">
+            <h3>Biometric & Password</h3>
+            
+            <div class="pref-item" style="margin-bottom: 1.5rem;">
+              <div>
+                <div style="font-weight: 700;">Biometric Login</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">FaceID / Fingerprint login on supported devices</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="biometric-toggle">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <h4>Change Account Password</h4>
+            <form id="change-pass-form" style="margin-top: 0.75rem;">
+              <div class="form-group">
+                <label class="form-label">Current Password</label>
+                <input type="password" id="curr-pass" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input type="password" id="new-pass" class="form-control" required minlength="6">
+              </div>
+              <button type="submit" class="btn btn-primary" style="width: 100%;"><i class="fa-solid fa-key"></i> Update Password</button>
+            </form>
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    Auth.requireAuth();
+    renderSidebar('settings');
+
+    async function loadSecurityData() {
+      try {
+        const uRes = await ApiClient.get('/api/users/profile');
+        if (uRes.success && uRes.data) {
+          document.getElementById('biometric-toggle').checked = !!uRes.data.biometricEnabled;
+        }
+
+        const alertRes = await ApiClient.get('/api/security/alerts');
+        const container = document.getElementById('security-alerts-list');
+
+        if (alertRes.success && alertRes.data && alertRes.data.length > 0) {
+          container.innerHTML = alertRes.data.map(a => `
+            <div style="padding: 1.25rem; border-left: 4px solid ${a.severity === 'HIGH' ? 'var(--danger)' : 'var(--accent)'}; background: rgba(31, 41, 55, 0.5); border-radius: var(--radius-sm); margin-bottom: 1rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="badge ${a.severity === 'HIGH' ? 'badge-danger' : 'badge-warning'}">${a.severity} ALERT</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">${new Date(a.createdAt).toLocaleString()}</span>
+              </div>
+              <div style="font-weight: 600; font-size: 0.95rem; margin: 0.6rem 0;">${a.alertMessage}</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Reference: ${a.transactionId || 'N/A'}</div>
+              
+              ${!a.isReviewed ? `
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.85rem;">
+                  <button onclick="reviewAlert(${a.id})" class="btn btn-secondary btn-sm" style="flex: 1;">
+                    <i class="fa-solid fa-circle-check"></i> This Was Me
+                  </button>
+                  <button onclick="secureAccount(${a.id})" class="btn btn-danger btn-sm" style="flex: 1;">
+                    <i class="fa-solid fa-shield-halved"></i> Secure My Account
+                  </button>
+                </div>
+              ` : `
+                <div style="margin-top: 0.5rem;">
+                  <span class="badge badge-success"><i class="fa-solid fa-check"></i> REVIEWED</span>
+                </div>
+              `}
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 2rem;">No security alerts flagged for your account.</p>`;
+        }
+      } catch (err) { showToast(err.message, 'error'); }
+    }
+
+    function saveNotificationPref() {
+      showToast('Notification preferences updated', 'info');
+    }
+
+    function saveScheduleSettings() {
+      const summaryTime = document.getElementById('daily-summary-time').value;
+      const savingsTime = document.getElementById('savings-reminder-time').value;
+      const budgetPct = document.getElementById('budget-alert-pct').value;
+      showToast(`Schedule saved! Daily summary at ${summaryTime}, Savings reminder at ${savingsTime}, Budget alert at ${budgetPct}%`, 'success');
+    }
+
+    document.getElementById('biometric-toggle').addEventListener('change', async (e) => {
+      try {
+        await ApiClient.post('/api/users/biometric', { enabled: e.target.checked });
+        showToast(`Biometric authentication ${e.target.checked ? 'enabled' : 'disabled'}`, 'info');
+      } catch (err) { showToast(err.message, 'error'); }
+    });
+
+    document.getElementById('change-pass-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const currentPassword = document.getElementById('curr-pass').value;
+      const newPassword = document.getElementById('new-pass').value;
+
+      try {
+        await ApiClient.post('/api/auth/change-password', { currentPassword, newPassword });
+        showToast('Password changed successfully!', 'success');
+        document.getElementById('change-pass-form').reset();
+      } catch (err) { showToast(err.message, 'error'); }
+    });
+
+    async function reviewAlert(id) {
+      try {
+        await ApiClient.put(`/api/security/alerts/${id}/review`);
+        showToast('Alert marked as reviewed: Verified by user', 'success');
+        loadSecurityData();
+      } catch (err) { showToast(err.message, 'error'); }
+    }
+
+    async function secureAccount(id) {
+      try {
+        await ApiClient.post(`/api/security/alerts/${id}/secure`);
+        showToast('Account sessions secured! Please log in again.', 'warning');
+        setTimeout(() => {
+          Auth.logout();
+        }, 1500);
+      } catch (err) { showToast(err.message, 'error'); }
+    }
+
+    loadSecurityData();
+  </script>
+</body>
+</html>

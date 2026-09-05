@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal - FinCommerce</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-wrapper">
+    <div id="sidebar-component"></div>
+
+    <main class="main-content">
+      <div class="header-bar">
+        <div class="page-title">
+          <h2>Admin Control Portal</h2>
+          <p>System metrics, product catalog management, order fulfillment & fraud audit</p>
+        </div>
+      </div>
+
+      <!-- Admin Overview Metrics -->
+      <div class="metrics-grid">
+        <div class="glass-card metric-card">
+          <div class="metric-info">
+            <h4>Total Revenue</h4>
+            <div class="value" id="adm-revenue">₹0.00</div>
+          </div>
+          <div class="metric-icon icon-green"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+        </div>
+
+        <div class="glass-card metric-card">
+          <div class="metric-info">
+            <h4>Total Users</h4>
+            <div class="value" id="adm-users">0</div>
+          </div>
+          <div class="metric-icon icon-purple"><i class="fa-solid fa-users"></i></div>
+        </div>
+
+        <div class="glass-card metric-card">
+          <div class="metric-info">
+            <h4>Total Orders</h4>
+            <div class="value" id="adm-orders">0</div>
+          </div>
+          <div class="metric-icon icon-yellow"><i class="fa-solid fa-boxes-stack"></i></div>
+        </div>
+
+        <div class="glass-card metric-card">
+          <div class="metric-info">
+            <h4>Pending Fraud Alerts</h4>
+            <div class="value" id="adm-alerts" style="color: var(--danger);">0</div>
+          </div>
+          <div class="metric-icon icon-red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        </div>
+      </div>
+
+      <!-- Admin Management Tabs -->
+      <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; overflow-x: auto;">
+        <button class="btn btn-outline btn-sm active" id="tab-btn-products" onclick="switchTab('products')"><i class="fa-solid fa-store"></i> Products Catalog</button>
+        <button class="btn btn-outline btn-sm" id="tab-btn-orders" onclick="switchTab('orders')"><i class="fa-solid fa-truck-fast"></i> Order Fulfillment</button>
+        <button class="btn btn-outline btn-sm" id="tab-btn-coupons" onclick="switchTab('coupons')"><i class="fa-solid fa-ticket"></i> Coupons</button>
+        <button class="btn btn-outline btn-sm" id="tab-btn-alerts" onclick="switchTab('alerts')"><i class="fa-solid fa-shield-halved"></i> Fraud Alerts</button>
+        <button class="btn btn-outline btn-sm" id="tab-btn-tickets" onclick="switchTab('tickets')"><i class="fa-solid fa-headset"></i> Support Tickets</button>
+      </div>
+
+      <!-- TAB 1: PRODUCTS -->
+      <div id="tab-products" class="tab-content glass-card" style="padding: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3>Product Catalog</h3>
+          <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-product')"><i class="fa-solid fa-plus"></i> Add Product</button>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Brand</th>
+                <th>Price</th>
+                <th>Discount</th>
+                <th>Stock</th>
+                <th>Rating</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-products-tbody">
+              <tr><td colspan="8" style="color: var(--text-muted); text-align: center;">Loading catalog...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 2: ORDERS -->
+      <div id="tab-orders" class="tab-content glass-card" style="padding: 1.5rem; display: none;">
+        <h3>Customer Orders Fulfillment</h3>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Order #</th>
+                <th>User / Date</th>
+                <th>Total</th>
+                <th>Payment</th>
+                <th>Current Status</th>
+                <th>Update Status</th>
+              </tr>
+            </thead>
+            <tbody id="admin-orders-tbody">
+              <tr><td colspan="6" style="color: var(--text-muted); text-align: center;">Loading orders...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 3: COUPONS -->
+      <div id="tab-coupons" class="tab-content glass-card" style="padding: 1.5rem; display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3>Manage Discount Coupons</h3>
+          <button class="btn btn-secondary btn-sm" onclick="openModal('modal-add-coupon')"><i class="fa-solid fa-plus"></i> Create Coupon</button>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Type</th>
+                <th>Discount Value</th>
+                <th>Min Order</th>
+                <th>Expiry</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-coupons-tbody">
+              <tr><td colspan="6" style="color: var(--text-muted); text-align: center;">Loading coupons...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 4: ALERTS -->
+      <div id="tab-alerts" class="tab-content glass-card" style="padding: 1.5rem; display: none;">
+        <h3>Suspicious Transaction Security Alerts</h3>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Alert ID</th>
+                <th>Txn Ref</th>
+                <th>Severity</th>
+                <th>Alert Message</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="admin-alerts-tbody">
+              <tr><td colspan="6" style="color: var(--text-muted); text-align: center;">Loading alerts...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 5: TICKETS -->
+      <div id="tab-tickets" class="tab-content glass-card" style="padding: 1.5rem; display: none;">
+        <h3>Customer Support Tickets</h3>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Ticket #</th>
+                <th>Subject</th>
+                <th>Category</th>
+                <th>Message</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="admin-tickets-tbody">
+              <tr><td colspan="6" style="color: var(--text-muted); text-align: center;">Loading tickets...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- MODALS -->
+
+  <!-- Add Product Modal -->
+  <div class="modal-overlay" id="modal-add-product">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3>Add New Catalog Product</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="add-product-form">
+        <div class="form-group">
+          <label class="form-label">Product Name</label>
+          <input type="text" id="p-name" class="form-control" placeholder="Smart Watch Pro" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Brand</label>
+          <input type="text" id="p-brand" class="form-control" placeholder="TechBrand" required>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label class="form-label">Price (₹)</label>
+            <input type="number" id="p-price" class="form-control" min="1" step="0.01" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Discount %</label>
+            <input type="number" id="p-discount" class="form-control" min="0" max="100" value="0">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Stock Quantity</label>
+          <input type="number" id="p-stock" class="form-control" min="0" value="50" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category ID (1: Electronics, 2: Fashion, etc.)</label>
+          <input type="number" id="p-cat-id" class="form-control" value="1" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Image URL</label>
+          <input type="text" id="p-img" class="form-control" value="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=500&q=80">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea id="p-desc" class="form-control" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;"><i class="fa-solid fa-plus"></i> Save Product</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Coupon Modal -->
+  <div class="modal-overlay" id="modal-add-coupon">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3>Create Coupon Code</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="add-coupon-form">
+        <div class="form-group">
+          <label class="form-label">Coupon Code</label>
+          <input type="text" id="c-code" class="form-control" placeholder="SUPER50" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Discount Type</label>
+          <select id="c-type" class="form-control">
+            <option value="PERCENTAGE">Percentage (%)</option>
+            <option value="FIXED">Fixed Amount (₹)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Discount Value</label>
+          <input type="number" id="c-val" class="form-control" min="1" step="0.01" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Min Order Value (₹)</label>
+          <input type="number" id="c-min" class="form-control" min="0" value="0">
+        </div>
+        <button type="submit" class="btn btn-secondary" style="width: 100%;"><i class="fa-solid fa-plus"></i> Save Coupon</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    Auth.requireAdmin();
+    renderSidebar('admin');
+
+    async function loadAdminDashboard() {
+      try {
+        const res = await ApiClient.get('/api/admin/dashboard');
+        if (res.success && res.data) {
+          const d = res.data;
+          document.getElementById('adm-revenue').textContent = formatCurrency(d.totalRevenue);
+          document.getElementById('adm-users').textContent = d.totalUsers;
+          document.getElementById('adm-orders').textContent = d.totalOrders;
+          document.getElementById('adm-alerts').textContent = d.fraudAlerts;
+        }
+
+        loadProducts();
+      } catch (err) { showToast(err.message, 'error'); }
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById(`tab-${tabName}`).style.display = 'block';
+
+      if (tabName === 'products') loadProducts();
+      if (tabName === 'orders') loadOrders();
+      if (tabName === 'coupons') loadCoupons();
+      if (tabName === 'alerts') loadAlerts();
+      if (tabName === 'tickets') loadTickets();
+    }
+
+    async function loadProducts() {
+      const res = await ApiClient.get('/api/admin/products');
+      const tbody = document.getElementById('admin-products-tbody');
+      if (res.success && res.data) {
+        tbody.innerHTML = res.data.map(p => `
+          <tr>
+            <td>${p.id}</td>
+            <td><strong>${p.name}</strong></td>
+            <td>${p.brand}</td>
+            <td>${formatCurrency(p.price)}</td>
+            <td>${p.discountPercent}%</td>
+            <td><span class="badge ${p.stockQuantity > 0 ? 'badge-success' : 'badge-danger'}">${p.stockQuantity}</span></td>
+            <td><i class="fa-solid fa-star" style="color: var(--accent);"></i> ${p.rating}</td>
+            <td>
+              <button onclick="deleteProduct(${p.id})" class="btn btn-outline btn-sm" style="color: var(--danger); border-color: var(--danger);"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    async function loadOrders() {
+      const res = await ApiClient.get('/api/admin/orders');
+      const tbody = document.getElementById('admin-orders-tbody');
+      if (res.success && res.data) {
+        tbody.innerHTML = res.data.map(o => `
+          <tr>
+            <td><strong style="color: var(--primary);">${o.orderNumber}</strong></td>
+            <td>${o.user ? o.user.fullName : 'Customer'} (${new Date(o.createdAt).toLocaleDateString()})</td>
+            <td style="font-weight: 700;">${formatCurrency(o.finalTotal)}</td>
+            <td><span class="badge badge-info">${o.paymentStatus}</span></td>
+            <td><span class="badge badge-success">${o.orderStatus}</span></td>
+            <td>
+              <select onchange="updateOrderStatus(${o.id}, this.value)" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">
+                <option value="CONFIRMED" ${o.orderStatus === 'CONFIRMED' ? 'selected' : ''}>CONFIRMED</option>
+                <option value="PACKED" ${o.orderStatus === 'PACKED' ? 'selected' : ''}>PACKED</option>
+                <option value="SHIPPED" ${o.orderStatus === 'SHIPPED' ? 'selected' : ''}>SHIPPED</option>
+                <option value="OUT_FOR_DELIVERY" ${o.orderStatus === 'OUT_FOR_DELIVERY' ? 'selected' : ''}>OUT_FOR_DELIVERY</option>
+                <option value="DELIVERED" ${o.orderStatus === 'DELIVERED' ? 'selected' : ''}>DELIVERED</option>
+                <option value="CANCELLED" ${o.orderStatus === 'CANCELLED' ? 'selected' : ''}>CANCELLED</option>
+              </select>
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    async function updateOrderStatus(orderId, status) {
+      try {
+        await ApiClient.put(`/api/admin/orders/${orderId}/status`, { status });
+        showToast('Order status updated!', 'success');
+        loadOrders();
+      } catch (err) { showToast(err.message, 'error'); }
+    }
+
+    async function deleteProduct(id) {
+      if (confirm('Delete this product from catalog?')) {
+        try {
+          await ApiClient.delete(`/api/admin/products/${id}`);
+          showToast('Product deleted', 'info');
+          loadProducts();
+        } catch (err) { showToast(err.message, 'error'); }
+      }
+    }
+
+    async function loadCoupons() {
+      const res = await ApiClient.get('/api/admin/coupons');
+      const tbody = document.getElementById('admin-coupons-tbody');
+      if (res.success && res.data) {
+        tbody.innerHTML = res.data.map(c => `
+          <tr>
+            <td><strong style="color: var(--secondary);">${c.code}</strong></td>
+            <td>${c.discountType}</td>
+            <td>${c.discountType === 'PERCENTAGE' ? c.discountValue + '%' : formatCurrency(c.discountValue)}</td>
+            <td>${formatCurrency(c.minOrderValue)}</td>
+            <td>${c.expiryDate || 'N/A'}</td>
+            <td><button onclick="deleteCoupon(${c.id})" class="btn btn-outline btn-sm" style="color: var(--danger); border-color: var(--danger);"><i class="fa-solid fa-trash"></i></button></td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    async function deleteCoupon(id) {
+      if (confirm('Delete coupon?')) {
+        try {
+          await ApiClient.delete(`/api/admin/coupons/${id}`);
+          showToast('Coupon deleted', 'info');
+          loadCoupons();
+        } catch (err) { showToast(err.message, 'error'); }
+      }
+    }
+
+    async function loadAlerts() {
+      const res = await ApiClient.get('/api/admin/alerts');
+      const tbody = document.getElementById('admin-alerts-tbody');
+      if (res.success && res.data) {
+        tbody.innerHTML = res.data.map(a => `
+          <tr>
+            <td>${a.id}</td>
+            <td><code>${a.transactionId || 'N/A'}</code></td>
+            <td><span class="badge ${a.severity === 'HIGH' ? 'badge-danger' : 'badge-warning'}">${a.severity}</span></td>
+            <td>${a.alertMessage}</td>
+            <td><span class="badge ${a.isReviewed ? 'badge-success' : 'badge-danger'}">${a.status}</span></td>
+            <td>${!a.isReviewed ? `<button onclick="reviewAlertAdmin(${a.id})" class="btn btn-outline btn-sm"><i class="fa-solid fa-check"></i> Review</button>` : 'OK'}</td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    async function reviewAlertAdmin(id) {
+      try {
+        await ApiClient.put(`/api/admin/alerts/${id}/review`);
+        showToast('Alert reviewed', 'success');
+        loadAlerts();
+      } catch (err) { showToast(err.message, 'error'); }
+    }
+
+    async function loadTickets() {
+      const res = await ApiClient.get('/api/admin/tickets');
+      const tbody = document.getElementById('admin-tickets-tbody');
+      if (res.success && res.data) {
+        tbody.innerHTML = res.data.map(t => `
+          <tr>
+            <td><strong>${t.ticketNumber}</strong></td>
+            <td>${t.subject}</td>
+            <td>${t.category}</td>
+            <td style="font-size: 0.85rem;">${t.message}</td>
+            <td><span class="badge ${t.status === 'RESOLVED' ? 'badge-success' : 'badge-warning'}">${t.status}</span></td>
+            <td>${t.status !== 'RESOLVED' ? `<button onclick="resolveTicket(${t.id})" class="btn btn-secondary btn-sm"><i class="fa-solid fa-check"></i> Resolve</button>` : 'Resolved'}</td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    async function resolveTicket(id) {
+      try {
+        await ApiClient.put(`/api/admin/tickets/${id}/status`, { status: 'RESOLVED', notes: 'Resolved by Admin' });
+        showToast('Ticket marked as RESOLVED', 'success');
+        loadTickets();
+      } catch (err) { showToast(err.message, 'error'); }
+    }
+
+    document.getElementById('add-product-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const product = {
+        name: document.getElementById('p-name').value,
+        brand: document.getElementById('p-brand').value,
+        price: parseFloat(document.getElementById('p-price').value),
+        discountPercent: parseInt(document.getElementById('p-discount').value),
+        stockQuantity: parseInt(document.getElementById('p-stock').value),
+        category: { id: parseInt(document.getElementById('p-cat-id').value) },
+        imageUrl: document.getElementById('p-img').value,
+        description: document.getElementById('p-desc').value,
+        isFeatured: true
+      };
+
+      try {
+        await ApiClient.post('/api/admin/products', product);
+        showToast('Product added to catalog!', 'success');
+        closeModal('modal-add-product');
+        loadProducts();
+      } catch (err) { showToast(err.message, 'error'); }
+    });
+
+    document.getElementById('add-coupon-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const coupon = {
+        code: document.getElementById('c-code').value.toUpperCase(),
+        discountType: document.getElementById('c-type').value,
+        discountValue: parseFloat(document.getElementById('c-val').value),
+        minOrderValue: parseFloat(document.getElementById('c-min').value),
+        isActive: true
+      };
+
+      try {
+        await ApiClient.post('/api/admin/coupons', coupon);
+        showToast('Coupon created!', 'success');
+        closeModal('modal-add-coupon');
+        loadCoupons();
+      } catch (err) { showToast(err.message, 'error'); }
+    });
+
+    loadAdminDashboard();
+  </script>
+</body>
+</html>

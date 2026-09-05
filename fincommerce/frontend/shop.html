@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop Platform - FinCommerce</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-wrapper">
+    <div id="sidebar-component"></div>
+
+    <main class="main-content">
+      <div class="header-bar">
+        <div class="page-title">
+          <h2>E-Commerce Storefront</h2>
+          <p>Explore thousands of products with instant digital wallet checkout</p>
+        </div>
+        <div class="header-actions">
+          <a href="cart.html" class="btn btn-outline">
+            <i class="fa-solid fa-cart-shopping"></i> Shopping Cart
+          </a>
+        </div>
+      </div>
+
+      <!-- Search & Filters Toolbar -->
+      <div class="glass-card" style="padding: 1.5rem; margin-bottom: 2rem;">
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+          <div style="flex: 1; min-width: 260px; position: relative;">
+            <input type="text" id="search-input" class="form-control" placeholder="Search products, brands, or descriptions..." style="padding-left: 2.5rem;">
+            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+          </div>
+
+          <div style="width: 200px;">
+            <select id="category-filter" class="form-control">
+              <option value="">All Categories</option>
+            </select>
+          </div>
+
+          <div style="width: 180px;">
+            <select id="sort-filter" class="form-control">
+              <option value="featured">Featured First</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="rating">Top Rated</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Products Grid -->
+      <div id="products-container" class="products-grid">
+        <p style="color: var(--text-muted);">Loading products...</p>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    Auth.requireAuth();
+    renderSidebar('shop');
+
+    let allProducts = [];
+    let selectedCategoryId = null;
+
+    async function initShop() {
+      try {
+        // Load Categories
+        const catRes = await ApiClient.get('/api/categories');
+        const catSelect = document.getElementById('category-filter');
+        if (catRes.success && catRes.data) {
+          catSelect.innerHTML = `<option value="">All Categories</option>` +
+            catRes.data.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        }
+
+        loadProducts();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function loadProducts() {
+      try {
+        const query = document.getElementById('search-input').value.trim();
+        const categoryId = document.getElementById('category-filter').value;
+        const sort = document.getElementById('sort-filter').value;
+
+        let endpoint = `/api/products?`;
+        if (query) endpoint += `query=${encodeURIComponent(query)}&`;
+        if (categoryId) endpoint += `categoryId=${categoryId}`;
+
+        const res = await ApiClient.get(endpoint);
+        if (res.success && res.data) {
+          allProducts = res.data;
+
+          // Apply Client-Side Sorting
+          if (sort === 'price-asc') allProducts.sort((a, b) => a.discountedPrice - b.discountedPrice);
+          if (sort === 'price-desc') allProducts.sort((a, b) => b.discountedPrice - a.discountedPrice);
+          if (sort === 'rating') allProducts.sort((a, b) => b.rating - a.rating);
+
+          renderProducts(allProducts);
+        }
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function renderProducts(products) {
+      const container = document.getElementById('products-container');
+      if (products.length === 0) {
+        container.innerHTML = `<p style="grid-column: 1/-1; color: var(--text-muted); text-align: center; padding: 3rem;">No products match your search filters.</p>`;
+        return;
+      }
+
+      container.innerHTML = products.map(p => `
+        <div class="glass-card product-card">
+          <div class="product-image-wrap" onclick="window.location.href='product-details.html?id=${p.id}'" style="cursor: pointer;">
+            <img src="${p.imageUrl}" alt="${p.name}">
+            <button class="wishlist-btn" onclick="event.stopPropagation(); toggleWishlist(${p.id})"><i class="fa-solid fa-heart"></i></button>
+            ${p.discountPercent > 0 ? `<span class="badge badge-danger" style="position: absolute; top: 10px; left: 10px;">${p.discountPercent}% OFF</span>` : ''}
+          </div>
+          <div class="product-info">
+            <div class="product-category">${p.categoryName || 'GENERAL'}</div>
+            <h4 class="product-title" onclick="window.location.href='product-details.html?id=${p.id}'" style="cursor: pointer;">${p.name}</h4>
+            <div style="font-size: 0.85rem; color: var(--accent); margin-bottom: 0.5rem;">
+              <i class="fa-solid fa-star"></i> ${p.rating} (${p.reviewsCount} reviews)
+            </div>
+            <div class="product-price-row">
+              <div>
+                <span class="price">${formatCurrency(p.discountedPrice)}</span>
+                ${p.discountPercent > 0 ? `<span style="text-decoration: line-through; color: var(--text-muted); font-size: 0.85rem; margin-left: 0.4rem;">${formatCurrency(p.price)}</span>` : ''}
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="addToCart(${p.id})"><i class="fa-solid fa-cart-plus"></i> Add</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function addToCart(productId) {
+      try {
+        await ApiClient.post('/api/cart/items', { productId, quantity: 1 });
+        showToast('Product added to shopping cart!', 'success');
+      } catch (err) { showToast(err.message, 'error'); }
+    }
+
+    async function toggleWishlist(productId) {
+      try {
+        await ApiClient.post(`/api/wishlist/toggle/${productId}`);
+        showToast('Wishlist updated!', 'info');
+      } catch (err) { showToast(err.message, 'error'); }
+    }
+
+    document.getElementById('search-input').addEventListener('input', loadProducts);
+    document.getElementById('category-filter').addEventListener('change', loadProducts);
+    document.getElementById('sort-filter').addEventListener('change', loadProducts);
+
+    initShop();
+  </script>
+</body>
+</html>

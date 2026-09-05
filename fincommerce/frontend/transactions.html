@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transactions - FinCommerce</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-wrapper">
+    <div id="sidebar-component"></div>
+
+    <main class="main-content">
+      <div class="header-bar">
+        <div class="page-title">
+          <h2>Transaction History & Ledger</h2>
+          <p>Comprehensive record of all wallet credits, debits, UPI transfers, and refunds</p>
+        </div>
+      </div>
+
+      <!-- Filters & Search Toolbar -->
+      <div class="glass-card" style="padding: 1.5rem; margin-bottom: 2rem;">
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 240px;">
+            <input type="text" id="tx-search" class="form-control" placeholder="Search by Txn ID, Note, Sender, Receiver...">
+          </div>
+          <div style="width: 180px;">
+            <select id="tx-type-filter" class="form-control">
+              <option value="ALL">All Types</option>
+              <option value="ADD_MONEY">Add Money</option>
+              <option value="WITHDRAW">Withdrawal</option>
+              <option value="SEND">Money Sent</option>
+              <option value="RECEIVE">Money Received</option>
+              <option value="UPI_PAYMENT">UPI Payment</option>
+              <option value="BILL_PAYMENT">Bill Payment</option>
+              <option value="SHOPPING">Shopping</option>
+              <option value="REFUND">Refund</option>
+            </select>
+          </div>
+          <div style="width: 160px;">
+            <select id="tx-status-filter" class="form-control">
+              <option value="ALL">All Statuses</option>
+              <option value="SUCCESS">Success</option>
+              <option value="PENDING">Pending</option>
+              <option value="FAILED">Failed</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transaction Table Card -->
+      <div class="glass-card" style="padding: 1.5rem;">
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Transaction ID</th>
+                <th>Date & Time</th>
+                <th>Type</th>
+                <th>Sender / Receiver</th>
+                <th>Payment Method</th>
+                <th>Status</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody id="transactions-tbody">
+              <tr><td colspan="7" style="color: var(--text-muted); text-align: center;">Loading ledger...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    Auth.requireAuth();
+    renderSidebar('transactions');
+
+    async function loadTransactions() {
+      try {
+        const search = document.getElementById('tx-search').value.trim();
+        const type = document.getElementById('tx-type-filter').value;
+        const status = document.getElementById('tx-status-filter').value;
+
+        let url = `/api/transactions?`;
+        if (search) url += `search=${encodeURIComponent(search)}&`;
+        if (type !== 'ALL') url += `type=${type}&`;
+        if (status !== 'ALL') url += `status=${status}`;
+
+        const res = await ApiClient.get(url);
+        const tbody = document.getElementById('transactions-tbody');
+
+        if (res.success && res.data && res.data.length > 0) {
+          tbody.innerHTML = res.data.map(tx => {
+            const isCredit = tx.type === 'ADD_MONEY' || tx.type === 'RECEIVE' || tx.type === 'REFUND';
+            return `
+              <tr>
+                <td><strong style="color: var(--primary); font-family: monospace;">${tx.transactionId}</strong></td>
+                <td style="font-size: 0.85rem; color: var(--text-muted);">${tx.createdAt ? new Date(tx.createdAt).toLocaleString() : ''}</td>
+                <td><span class="badge badge-info">${tx.type}</span></td>
+                <td style="font-size: 0.9rem;">
+                  <div>${tx.senderInfo || 'Self'} &rarr; ${tx.receiverInfo || 'Merchant'}</div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">${tx.note || ''}</div>
+                </td>
+                <td style="font-size: 0.85rem;">${tx.paymentMethod || 'WALLET'}</td>
+                <td><span class="badge ${tx.status === 'SUCCESS' ? 'badge-success' : 'badge-danger'}">${tx.status}</span></td>
+                <td style="font-weight: 800; color: ${isCredit ? 'var(--secondary)' : 'var(--text-main)'}; font-size: 1rem;">
+                  ${isCredit ? '+' : '-'}${formatCurrency(tx.amount)}
+                </td>
+              </tr>
+            `;
+          }).join('');
+        } else {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No matching transactions found.</td></tr>`;
+        }
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    document.getElementById('tx-search').addEventListener('input', loadTransactions);
+    document.getElementById('tx-type-filter').addEventListener('change', loadTransactions);
+    document.getElementById('tx-status-filter').addEventListener('change', loadTransactions);
+
+    loadTransactions();
+  </script>
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Savings & Financial Goals - FinCommerce</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .savings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .goal-card {
+      position: relative;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .goal-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+    .goal-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+    .goal-amounts {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin: 1rem 0 0.5rem 0;
+    }
+    .goal-saved {
+      font-size: 1.5rem;
+      font-weight: 800;
+      font-family: var(--font-heading);
+      color: var(--text-main);
+    }
+    .goal-target {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .goal-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-color);
+    }
+    .savings-summary-card {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(16, 185, 129, 0.1) 100%);
+      border: 1px solid var(--border-highlight);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div id="sidebar-component"></div>
+
+    <main class="main-content">
+      <!-- Header -->
+      <div class="header-bar">
+        <div class="page-title">
+          <h2><i class="fa-solid fa-piggy-bank" style="color: var(--primary); margin-right: 0.5rem;"></i> Savings & Financial Goals</h2>
+          <p>Set targets, automate savings from your wallet, and build financial freedom</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-outline" onclick="openModal('withdraw-modal')">
+            <i class="fa-solid fa-arrow-up-from-bracket"></i> Withdraw
+          </button>
+          <button class="btn btn-secondary" onclick="openMoveMoneyModal()">
+            <i class="fa-solid fa-money-bill-transfer"></i> Save Money
+          </button>
+          <button class="btn btn-primary" onclick="openModal('create-goal-modal')">
+            <i class="fa-solid fa-plus"></i> Create Savings Goal
+          </button>
+        </div>
+      </div>
+
+      <!-- Savings Metrics Dashboard -->
+      <div class="metrics-grid">
+        <div class="glass-card metric-card savings-summary-card">
+          <div class="metric-info">
+            <h4>Total Saved</h4>
+            <div class="value" id="metric-total-saved">₹0.00</div>
+          </div>
+          <div class="metric-icon icon-green"><i class="fa-solid fa-piggy-bank"></i></div>
+        </div>
+
+        <div class="glass-card metric-card">
+          <div class="metric-info">
+            <h4>Available Wallet Balance</h4>
+            <div class="value" id="metric-wallet-balance">₹0.00</div>
+          </div>
+          <div class="metric-icon icon-purple"><i class="fa-solid fa-wallet"></i></div>
+        </div>
+
+        <div class="glass-card metric-card">
+          <div class="metric-info">
+            <h4>Active Goals</h4>
+            <div class="value" id="metric-active-goals">0</div>
+          </div>
+          <div class="metric-icon icon-yellow"><i class="fa-solid fa-bullseye"></i></div>
+        </div>
+
+        <div class="glass-card metric-card">
+          <div class="metric-info">
+            <h4>Completed Goals</h4>
+            <div class="value" id="metric-completed-goals">0</div>
+          </div>
+          <div class="metric-icon icon-green"><i class="fa-solid fa-trophy"></i></div>
+        </div>
+      </div>
+
+      <!-- Active Savings Goals Section -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h3>My Savings Goals</h3>
+        <span style="font-size: 0.85rem; color: var(--text-muted);" id="goals-count-text">Showing active & completed goals</span>
+      </div>
+
+      <!-- Goals Grid -->
+      <div class="savings-grid" id="goals-container">
+        <div class="glass-card" style="padding: 2rem; text-align: center;">
+          <p style="color: var(--text-muted);">Loading your savings goals...</p>
+        </div>
+      </div>
+
+      <!-- Savings Transactions History -->
+      <div class="glass-card" style="padding: 1.5rem; margin-top: 2rem;">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+          <div>
+            <h3>Savings Transaction History</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Track all wallet-to-savings deposits and withdrawals</p>
+          </div>
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <input type="text" id="tx-search" class="form-control" placeholder="Search transactions..." style="width: 200px; padding: 0.45rem 0.85rem;">
+            <select id="tx-type-filter" class="form-control" style="width: 170px; padding: 0.45rem 0.85rem;">
+              <option value="ALL">All Types</option>
+              <option value="SAVINGS_TRANSFER">SAVINGS_TRANSFER</option>
+              <option value="SAVINGS_WITHDRAWAL">SAVINGS_WITHDRAWAL</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted);">
+                <th style="padding: 0.75rem;">Transaction ID</th>
+                <th style="padding: 0.75rem;">Date & Time</th>
+                <th style="padding: 0.75rem;">Goal / Note</th>
+                <th style="padding: 0.75rem;">Type</th>
+                <th style="padding: 0.75rem;">Amount</th>
+                <th style="padding: 0.75rem;">Status</th>
+              </tr>
+            </thead>
+            <tbody id="savings-tx-tbody">
+              <tr>
+                <td colspan="6" style="padding: 1.5rem; text-align: center; color: var(--text-muted);">Loading transactions...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- MODAL 1: Create Savings Goal -->
+  <div class="modal-overlay" id="create-goal-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-bullseye" style="color: var(--primary);"></i> Create Savings Goal</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="create-goal-form">
+        <div class="form-group">
+          <label class="form-label" for="goal-name">Goal Name</label>
+          <input type="text" id="goal-name" class="form-control" placeholder="e.g. New Laptop, Emergency Fund" required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label class="form-label" for="goal-category">Goal Category</label>
+            <select id="goal-category" class="form-control" required>
+              <option value="Emergency Fund">Emergency Fund</option>
+              <option value="Education">Education</option>
+              <option value="Travel">Travel</option>
+              <option value="New Phone">New Phone</option>
+              <option value="Laptop" selected>Laptop</option>
+              <option value="Vehicle">Vehicle</option>
+              <option value="Home">Home</option>
+              <option value="Wedding">Wedding</option>
+              <option value="Investment">Investment</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="target-amount">Target Amount (₹)</label>
+            <input type="number" id="target-amount" class="form-control" min="1" step="0.01" placeholder="80000" required>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label class="form-label" for="initial-saving">Initial Saving Amount (₹)</label>
+            <input type="number" id="initial-saving" class="form-control" min="0" step="0.01" placeholder="5000" value="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="target-date">Target Date</label>
+            <input type="date" id="target-date" class="form-control" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="goal-desc">Description (Optional)</label>
+          <textarea id="goal-desc" class="form-control" rows="2" placeholder="Why are you saving for this?"></textarea>
+        </div>
+
+        <div class="form-group" id="initial-pin-group">
+          <label class="form-label" for="goal-pin">Transaction PIN (Required if Initial Saving > 0)</label>
+          <input type="password" id="goal-pin" class="form-control" placeholder="Default PIN: 1234" maxlength="6">
+          <small style="color: var(--text-muted);">Default Transaction PIN is <strong>1234</strong></small>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+          <i class="fa-solid fa-check-circle"></i> Create Goal
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: Move Money to Savings / Add Money -->
+  <div class="modal-overlay" id="move-money-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-money-bill-transfer" style="color: var(--secondary);"></i> Move Money to Savings</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="move-money-form">
+        <div class="form-group">
+          <label class="form-label" for="move-goal-select">Select Savings Goal</label>
+          <select id="move-goal-select" class="form-control" required></select>
+        </div>
+
+        <div class="glass-card" style="padding: 1rem; margin-bottom: 1.25rem; background: var(--bg-input);">
+          <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted);">
+            <span>Current Wallet Balance:</span>
+            <strong id="move-current-wallet" style="color: var(--secondary);">₹0.00</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">
+            <span>Remaining After Transfer:</span>
+            <strong id="move-remaining-wallet" style="color: var(--text-main);">₹0.00</strong>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="move-amount">Amount to Save (₹)</label>
+          <input type="number" id="move-amount" class="form-control" min="1" step="0.01" placeholder="3000" required oninput="calculateMoveRemaining()">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="move-pin">Transaction PIN</label>
+          <input type="password" id="move-pin" class="form-control" placeholder="1234" maxlength="6" required>
+        </div>
+
+        <button type="submit" class="btn btn-secondary" style="width: 100%; margin-top: 1rem;">
+          <i class="fa-solid fa-lock"></i> Confirm & Transfer
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3: Withdraw from Savings -->
+  <div class="modal-overlay" id="withdraw-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-arrow-up-from-bracket" style="color: var(--accent);"></i> Withdraw from Savings</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="withdraw-form">
+        <div class="form-group">
+          <label class="form-label" for="withdraw-goal-select">Select Savings Goal</label>
+          <select id="withdraw-goal-select" class="form-control" required onchange="updateWithdrawMax()"></select>
+        </div>
+
+        <div class="glass-card" style="padding: 1rem; margin-bottom: 1.25rem; background: var(--bg-input);">
+          <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted);">
+            <span>Currently Saved in Goal:</span>
+            <strong id="withdraw-saved-amount" style="color: var(--primary);">₹0.00</strong>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="withdraw-amount">Enter Withdrawal Amount (₹)</label>
+          <input type="number" id="withdraw-amount" class="form-control" min="1" step="0.01" placeholder="2000" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="withdraw-pin">Transaction PIN</label>
+          <input type="password" id="withdraw-pin" class="form-control" placeholder="1234" maxlength="6" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+          <i class="fa-solid fa-arrow-right-to-city"></i> Withdraw to Wallet
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 4: Goal Completion Celebration -->
+  <div class="modal-overlay" id="goal-completion-modal">
+    <div class="modal-container" style="text-align: center;">
+      <div style="font-size: 3.5rem; margin-bottom: 0.5rem;">🎉</div>
+      <h2 style="color: var(--secondary);">Congratulations!</h2>
+      <h4 id="completed-goal-title" style="margin: 0.5rem 0;">You reached your goal!</h4>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">You have successfully saved the target amount. What would you like to do next?</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <button class="btn btn-secondary" onclick="closeModal('goal-completion-modal')">
+          <i class="fa-solid fa-piggy-bank"></i> Keep Money Saved
+        </button>
+        <button class="btn btn-outline" onclick="closeModal('goal-completion-modal'); openModal('withdraw-modal');">
+          <i class="fa-solid fa-wallet"></i> Withdraw to Wallet
+        </button>
+        <button class="btn btn-primary" onclick="closeModal('goal-completion-modal'); openModal('create-goal-modal');">
+          <i class="fa-solid fa-plus"></i> Create New Goal
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/savings.js"></script>
+  <script>
+    Auth.requireAuth();
+    renderSidebar('savings');
+  </script>
+</body>
+</html>

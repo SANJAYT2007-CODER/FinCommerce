@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile - FinCommerce</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-wrapper">
+    <div id="sidebar-component"></div>
+
+    <main class="main-content">
+      <div class="header-bar">
+        <div class="page-title">
+          <h2>User Profile & Address Book</h2>
+          <p>Manage personal details, delivery addresses, and security PINs</p>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 2rem;">
+        
+        <!-- Profile Details Form -->
+        <div class="glass-card" style="padding: 2rem;">
+          <h3>Personal Details</h3>
+          <form id="profile-form" style="margin-top: 1.5rem;">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input type="text" id="prof-name" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address (Read Only)</label>
+              <input type="email" id="prof-email" class="form-control" readonly style="opacity: 0.7;">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mobile Number</label>
+              <input type="tel" id="prof-mobile" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date of Birth</label>
+              <input type="date" id="prof-dob" class="form-control">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Gender</label>
+              <select id="prof-gender" class="form-control">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;"><i class="fa-solid fa-floppy-disk"></i> Save Profile Changes</button>
+          </form>
+        </div>
+
+        <!-- Address Management & Security PIN -->
+        <div>
+          <!-- Saved Addresses Card -->
+          <div class="glass-card" style="padding: 2rem; margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h3>Address Book</h3>
+              <button class="btn btn-outline btn-sm" onclick="openModal('modal-add-addr')"><i class="fa-solid fa-plus"></i> Add New Address</button>
+            </div>
+            <div id="address-book-list">
+              <p style="color: var(--text-muted);">Loading addresses...</p>
+            </div>
+          </div>
+
+          <!-- Transaction PIN Card -->
+          <div class="glass-card" style="padding: 2rem;">
+            <h3>Update Transaction PIN</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Security PIN required for withdrawals, transfers, and checkout</p>
+            <form id="pin-form">
+              <div class="form-group">
+                <label class="form-label">New Transaction PIN (4-6 digits)</label>
+                <input type="password" id="new-pin-input" class="form-control" minlength="4" maxlength="6" placeholder="1234" required>
+              </div>
+              <button type="submit" class="btn btn-secondary" style="width: 100%;"><i class="fa-solid fa-key"></i> Update PIN</button>
+            </form>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Add Address Modal -->
+  <div class="modal-overlay" id="modal-add-addr">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3>Add Delivery Address</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="add-address-form">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" id="addr-name" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mobile Number</label>
+          <input type="tel" id="addr-mobile" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">House / Flat / Building</label>
+          <input type="text" id="addr-house" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Street / Area</label>
+          <input type="text" id="addr-street" class="form-control" required>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label class="form-label">City</label>
+            <input type="text" id="addr-city" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">State</label>
+            <input type="text" id="addr-state" class="form-control" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pincode</label>
+          <input type="text" id="addr-pincode" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;"><i class="fa-solid fa-plus"></i> Save Address</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    Auth.requireAuth();
+    renderSidebar('profile');
+
+    async function loadProfile() {
+      try {
+        const res = await ApiClient.get('/api/users/profile');
+        if (res.success && res.data) {
+          const u = res.data;
+          document.getElementById('prof-name').value = u.fullName || '';
+          document.getElementById('prof-email').value = u.email || '';
+          document.getElementById('prof-mobile').value = u.mobileNumber || '';
+          document.getElementById('prof-dob').value = u.dateOfBirth || '';
+          document.getElementById('prof-gender').value = u.gender || 'Male';
+        }
+
+        loadAddresses();
+      } catch (err) { showToast(err.message, 'error'); }
+    }
+
+    async function loadAddresses() {
+      try {
+        const res = await ApiClient.get('/api/users/addresses');
+        const container = document.getElementById('address-book-list');
+
+        if (res.success && res.data && res.data.length > 0) {
+          container.innerHTML = res.data.map(a => `
+            <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <div style="font-weight: 700; font-size: 0.95rem;">${a.fullName} (${a.mobileNumber}) ${a.isDefault ? '<span class="badge badge-success">Default</span>' : ''}</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">${a.houseFlat}, ${a.street}, ${a.city}, ${a.state} - ${a.pincode}</div>
+              </div>
+              <button onclick="deleteAddr(${a.id})" class="btn btn-outline btn-sm" style="color: var(--danger); border-color: var(--danger);"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = `<p style="color: var(--text-muted);">No addresses saved yet.</p>`;
+        }
+      } catch (err) { showToast(err.message, 'error'); }
+    }
+
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fullName = document.getElementById('prof-name').value;
+      const mobileNumber = document.getElementById('prof-mobile').value;
+      const dateOfBirth = document.getElementById('prof-dob').value;
+      const gender = document.getElementById('prof-gender').value;
+
+      try {
+        await ApiClient.put('/api/users/profile', { fullName, mobileNumber, dateOfBirth, gender });
+        showToast('Profile updated successfully!', 'success');
+      } catch (err) { showToast(err.message, 'error'); }
+    });
+
+    document.getElementById('pin-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const pin = document.getElementById('new-pin-input').value;
+      try {
+        await ApiClient.post('/api/auth/set-pin', { pin });
+        showToast('Transaction PIN updated!', 'success');
+        document.getElementById('pin-form').reset();
+      } catch (err) { showToast(err.message, 'error'); }
+    });
+
+    document.getElementById('add-address-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fullName = document.getElementById('addr-name').value;
+      const mobileNumber = document.getElementById('addr-mobile').value;
+      const houseFlat = document.getElementById('addr-house').value;
+      const street = document.getElementById('addr-street').value;
+      const city = document.getElementById('addr-city').value;
+      const state = document.getElementById('addr-state').value;
+      const pincode = document.getElementById('addr-pincode').value;
+
+      try {
+        await ApiClient.post('/api/users/addresses', { fullName, mobileNumber, houseFlat, street, city, state, country: 'India', pincode, isDefault: true });
+        showToast('Address saved!', 'success');
+        closeModal('modal-add-addr');
+        loadAddresses();
+      } catch (err) { showToast(err.message, 'error'); }
+    });
+
+    async function deleteAddr(id) {
+      if (confirm('Delete this address?')) {
+        try {
+          await ApiClient.delete(`/api/users/addresses/${id}`);
+          showToast('Address removed', 'info');
+          loadAddresses();
+        } catch (err) { showToast(err.message, 'error'); }
+      }
+    }
+
+    loadProfile();
+  </script>
+</body>
+</html>
