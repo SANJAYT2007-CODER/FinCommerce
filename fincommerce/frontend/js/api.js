@@ -1,6 +1,6 @@
 /* FinCommerce Centralized API Client */
 
-const API_BASE_URL = 'http://localhost:8085';
+const API_BASE_URL = 'https://fincommerce.onrender.com';
 
 class ApiClient {
 
@@ -57,7 +57,7 @@ class ApiClient {
       return data;
     } catch (error) {
       if (error.message.includes('Failed to fetch')) {
-        throw new Error('Cannot connect to backend server at http://localhost:8085. Please start the Spring Boot application using .\\mvnw.cmd spring-boot:run');
+       throw new Error('Cannot connect to backend server. Please try again later.')
       }
       console.error(`[API Error] ${endpoint}:`, error);
       throw error;
